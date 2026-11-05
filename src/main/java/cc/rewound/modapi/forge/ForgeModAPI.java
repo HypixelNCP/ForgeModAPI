@@ -1,15 +1,19 @@
-package net.hypixel.modapi.forge;
+package cc.rewound.modapi.forge;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import net.hypixel.modapi.HypixelModAPI;
-import net.hypixel.modapi.HypixelModAPIImplementation;
-import net.hypixel.modapi.packet.HypixelPacket;
-import net.hypixel.modapi.packet.impl.clientbound.ClientboundHelloPacket;
-import net.hypixel.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
-import net.hypixel.modapi.serializer.PacketSerializer;
+import cc.rewound.modapi.RewoundModAPI;
+import cc.rewound.modapi.RewoundModAPIImplementation;
+import cc.rewound.modapi.packet.EventPacket;
+import cc.rewound.modapi.packet.RewoundPacket;
+import cc.rewound.modapi.packet.impl.clientbound.ClientboundHelloPacket;
+import cc.rewound.modapi.packet.impl.clientbound.event.ClientboundGameFinishPacket;
+import cc.rewound.modapi.packet.impl.clientbound.event.ClientboundGameRejoinPacket;
+import cc.rewound.modapi.packet.impl.clientbound.event.ClientboundGameStartPacket;
+import cc.rewound.modapi.packet.impl.clientbound.event.ClientboundLocationPacket;
+import cc.rewound.modapi.serializer.PacketSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.network.Packet;
@@ -25,37 +29,37 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod(modid = ForgeModAPI.MODID, version = ForgeModAPI.VERSION, clientSideOnly = true, name = "Hypixel Mod API")
-public class ForgeModAPI implements HypixelModAPIImplementation {
-    public static final String MODID = "hypixel_mod_api";
+@Mod(modid = ForgeModAPI.MODID, version = ForgeModAPI.VERSION, clientSideOnly = true, name = "Rewound Mod API")
+public class ForgeModAPI implements RewoundModAPIImplementation {
+    public static final String MODID = "rewound_mod_api";
     public static final String VERSION = "${version}";
-    private static final Logger LOGGER = LogManager.getLogger("HypixelModAPI");
-    private static final boolean DEBUG_MODE = Boolean.getBoolean("net.hypixel.modapi.debug");
+    private static final Logger LOGGER = LogManager.getLogger("RewoundModAPI");
+    private static final boolean DEBUG_MODE = Boolean.getBoolean("cc.rewound.modapi.debug");
 
     // We store a local reference to the net handler, so it's instantly available from the moment we connect
     private NetHandlerPlayClient netHandler;
-    private boolean onHypixel;
+    private boolean onRewound;
 
     @Mod.EventHandler
     public void init(FMLPostInitializationEvent event) {
-        HypixelModAPI.getInstance().setModImplementation(this);
+        RewoundModAPI.getInstance().setModImplementation(this);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onServerConnect(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         netHandler = (NetHandlerPlayClient) event.handler;
-        event.manager.channel().pipeline().addBefore("packet_handler", "hypixel_mod_api_packet_handler", HypixelPacketHandler.INSTANCE);
+        event.manager.channel().pipeline().addBefore("packet_handler", "rewound_mod_api_packet_handler", RewoundPacketHandler.INSTANCE);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onServerDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         netHandler = null;
-        onHypixel = false;
+        onRewound = false;
     }
 
     @Override
     public void onInit() {
-        HypixelModAPI.getInstance().createHandler(ClientboundHelloPacket.class, packet -> onHypixel = true);
+        RewoundModAPI.getInstance().createHandler(ClientboundHelloPacket.class, packet -> onRewound = true);
         MinecraftForge.EVENT_BUS.register(this);
 
         if (DEBUG_MODE) {
@@ -65,12 +69,12 @@ public class ForgeModAPI implements HypixelModAPIImplementation {
     }
 
     @Override
-    public boolean sendPacket(HypixelPacket packet) {
+    public boolean sendPacket(RewoundPacket packet) {
         if (netHandler == null) {
             return false;
         }
 
-        if (!isConnectedToHypixel()) {
+        if (!isConnectedToRewound()) {
             return false;
         }
 
@@ -88,13 +92,13 @@ public class ForgeModAPI implements HypixelModAPIImplementation {
     }
 
     @Override
-    public boolean isConnectedToHypixel() {
-        return onHypixel;
+    public boolean isConnectedToRewound() {
+        return onRewound;
     }
 
     @ChannelHandler.Sharable
-    private static class HypixelPacketHandler extends SimpleChannelInboundHandler<Packet<?>> {
-        private static final HypixelPacketHandler INSTANCE = new HypixelPacketHandler();
+    private static class RewoundPacketHandler extends SimpleChannelInboundHandler<Packet<?>> {
+        private static final RewoundPacketHandler INSTANCE = new RewoundPacketHandler();
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, Packet<?> msg) {
@@ -105,7 +109,7 @@ public class ForgeModAPI implements HypixelModAPIImplementation {
 
             S3FPacketCustomPayload packet = (S3FPacketCustomPayload) msg;
             String identifier = packet.getChannelName();
-            if (!HypixelModAPI.getInstance().getRegistry().isRegistered(identifier)) {
+            if (!RewoundModAPI.getInstance().getRegistry().isRegistered(identifier)) {
                 ctx.fireChannelRead(msg);
                 return;
             }
@@ -115,7 +119,7 @@ public class ForgeModAPI implements HypixelModAPIImplementation {
             ctx.fireChannelRead(msg);
             Minecraft.getMinecraft().addScheduledTask(() -> {
                 try {
-                    HypixelModAPI.getInstance().handle(identifier, new PacketSerializer(buffer));
+                    RewoundModAPI.getInstance().handle(identifier, new PacketSerializer(buffer));
                 } catch (Exception e) {
                     LOGGER.warn("Failed to handle packet {}", identifier, e);
                 } finally {
@@ -127,9 +131,15 @@ public class ForgeModAPI implements HypixelModAPIImplementation {
 
     private static void registerDebug() {
         // Register events
-        HypixelModAPI.getInstance().subscribeToEventPacket(ClientboundLocationPacket.class);
+        subscribeDebug(ClientboundLocationPacket.class);
+        subscribeDebug(ClientboundGameStartPacket.class);
+        subscribeDebug(ClientboundGameFinishPacket.class);
+        subscribeDebug(ClientboundGameRejoinPacket.class);
+    }
 
-        HypixelModAPI.getInstance().createHandler(ClientboundLocationPacket.class, packet -> LOGGER.info("Received location packet {}", packet))
-                .onError(error -> LOGGER.error("Received error response for location packet: {}", error));
+    private static <T extends EventPacket> void subscribeDebug(Class<T> event) {
+        RewoundModAPI.getInstance().subscribeToEventPacket(event);
+        RewoundModAPI.getInstance().createHandler(event, packet -> LOGGER.info("Received event {}", packet))
+                .onError(error -> LOGGER.error("Received error response for event {}: {}", event.getSimpleName(), error));
     }
 }

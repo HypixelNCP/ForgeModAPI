@@ -1,26 +1,3 @@
-class ServerCredentials {
-    String username
-    String password
-
-    ServerCredentials(String username, String password) {
-        this.username = username
-        this.password = password
-    }
-}
-
-static ServerCredentials getServerCredentials(String serverId) {
-    def settingsXml = new File(System.getProperty("user.home"), ".m2/settings.xml")
-    def mavenSettings = new XmlSlurper().parse(settingsXml)
-
-    for (final def server in mavenSettings.servers.server) {
-        if (server.id == serverId) {
-            return new ServerCredentials(server.username.text(), server.password.text())
-        }
-    }
-
-    return null
-}
-
 // For those who want the bleeding edge
 buildscript {
     repositories {
@@ -36,14 +13,11 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 allprojects {
     apply plugin: 'maven-publish'
-    version = "1.0.2" // First 3 numbers should correspond to the version of the API, last number is for the mod itself for any changes/fixes
-    group = "net.hypixel" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-    archivesBaseName = "HypixelModAPI"
+    version = "1.0.2.0" // First 3 numbers should correspond to the version of the API, last number is for the mod itself for any changes/fixes
+    group = "cc.rewound" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+    archivesBaseName = "RewoundModAPI"
 
     repositories {
-        maven {
-            url "https://repo.hypixel.net/repository/Hypixel/"
-        }
         maven {
             url "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1"
         }
@@ -58,16 +32,6 @@ allprojects {
                 version = project.version
                     from components.java
                 }
-        }
-        repositories {
-            maven {
-                url = 'https://repo.hypixel.net/repository/Hypixel/'
-                ServerCredentials serverCreds = getServerCredentials("Hypixel")
-                credentials {
-                    username = serverCreds.username
-                    password = serverCreds.password
-                }
-            }
         }
     }
 }
@@ -92,7 +56,7 @@ configurations {
 }
 
 dependencies {
-    shade "net.hypixel:mod-api:1.0.2"
+    shade "cc.rewound:mod-api:dev-SNAPSHOT"
     runtimeOnly "me.djtheredstoner:DevAuth-forge-legacy:1.2.1"
 }
 

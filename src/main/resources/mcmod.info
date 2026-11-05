@@ -1,14 +1,14 @@
 [
   {
-    "modid": "hypixel_mod_api",
-    "name": "Hypixel Mod API",
-    "description": "Implementation of the Hypixel Mod API for Forge.",
+    "modid": "rewound_mod_api",
+    "name": "Rewound Mod API",
+    "description": "Implementation of the Rewound Mod API for Forge.",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "https://modrinth.com/mod/hypixel-mod-api/",
+    "url": "https://github.com/HypixelNCP/modapi",
     "updateUrl": "",
     "authorList": [
-      "Hypixel Inc."
+      "Rewound"
     ],
     "logoFile": "",
     "screenshots": [],

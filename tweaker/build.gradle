@@ -12,7 +12,7 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 task generateVersionInfo(type: WriteProperties) {
-    outputFile(file(new File(buildDir, "/properties/hypixel-mod-api-bundled.properties")))
+    outputFile(file(new File(buildDir, "/properties/rewound-mod-api-bundled.properties")))
     property("version", version)
 }
 
@@ -21,6 +21,6 @@ tasks.jar {
     from(project(":").jar)
     from(generateVersionInfo)
     manifest {
-        attributes("TweakClass": "net.hypixel.modapi.tweaker.HypixelModAPITweaker")
+        attributes("TweakClass": "cc.rewound.modapi.tweaker.RewoundModAPITweaker")
     }
 }

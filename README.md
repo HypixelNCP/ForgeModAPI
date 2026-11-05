@@ -1,80 +1,83 @@
-# Forge Mod API
+# Rewound Forge Mod API
 
-This repository contains the implementation of the Hypixel Mod API for the Forge Mod Loader in 1.8.9 for end-users. If you are a developer, and are looking to utilise the API you should look at the core [Hypixel Mod API](https://github.com/HypixelDev/ModAPI) repository.
+A fork of [Hypixel's ForgeModAPI](https://github.com/HypixelDev/ForgeModAPI) that implements the
+[Rewound Mod API](https://github.com/HypixelNCP/modapi) for Forge on 1.8.9. It's for end users; developers should look at
+the core library.
+
+## Building
+
+The core library isn't published to a repository yet, so install it to your local Maven repository first, then build this
+mod with JDK 8.
+
+```sh
+cd ../RewoundModAPI && mvn install
+cd ../RewoundForgeModAPI && ./gradlew build
+```
+
+The mod is `build/libs/RewoundModAPI-<version>.jar`, and the tweaker for bundling is
+`tweaker/build/libs/tweaker-<version>.jar`.
+
+Run `./gradlew setupDecompWorkspace` after importing the project to generate the files your IDE needs.
 
 ## Usage
 
-Add the Hypixel Maven repository to your build:
+Publish the mod to your local Maven repository with `./gradlew publishToMavenLocal`, then depend on it.
 
 ```kotlin
 repositories {
-    maven("https://repo.hypixel.net/repository/Hypixel/")
+    mavenLocal()
 }
-```
 
-Then depend on the Forge Mod API. This will automatically pull in dependencies too.
-
-```kotlin
-val version = "1.0.2"
+val version = "1.0.2.0"
 dependencies {
-    modImplementation("net.hypixel:mod-api-forge:$version")
+    modImplementation("cc.rewound:mod-api-forge:$version")
     // If you use ForgeGradle 2 you might need to use fg.deobf or deobfCompile instead. Consult your MDK for tips on how
     // to depend on an obfuscated dependency
 }
 ```
 
-From here on out you can use the [Hypixel Mod API](https://github.com/HypixelDev/ModAPI#example-usage) directly.
+From here on you can use the [Rewound Mod API](https://github.com/HypixelNCP/modapi) directly.
 
-### Bundling the Hypixel Mod API
+### Bundling the Rewound Mod API
 
-When using the Hypixel Mod API you need to instruct your users to
-[download](https://modrinth.com/mod/hypixel-mod-api/versions?l=forge) the mod api and put it in their mods folders.
+Either tell your users to put this mod in their mods folder, or bundle a loading tweaker. Bundling takes more setup, but
+your mod then carries a copy of the mod API and picks the newest available version at runtime.
 
-Alternatively you can bundle a loading tweaker instead. This involves a bit more setup, but will result in your mod
-containing a copy of the mod api and at runtime selecting the newest available version of the mod api.
+You need a shadow plugin, because the tweaker has to be relocated, which `fileTree` based jar copying can't do. Use the
+[shadow plugin](https://github.com/johnrengelman/shadow) or a [template](https://github.com/nea89o/Forge1.8.9Template) that
+already has it.
 
-First you need to have a shadow plugin in your gradle setup. Note that normal `fileTree` based JAR copying does not
-work, since we will need to relocate some files. Instead, use the [shadow plugin](https://github.com/johnrengelman/shadow)
-or make use of a [template](https://github.com/nea89o/Forge1.8.9Template) with the plugin already set up.
-
-Once you have your shadow plugin set up you will need to include a new dependency:
 ```kotlin
 dependencies {
-    modImplementation("net.hypixel:mod-api-forge:$version") // You should already have this dependency from earlier
-    shadowImpl("net.hypixel:mod-api-forge-tweaker:$version") // You need to add this dependency
+    modImplementation("cc.rewound:mod-api-forge:$version") // You should already have this dependency from earlier
+    shadowImpl("cc.rewound:mod-api-forge-tweaker:$version") // You need to add this dependency
 }
 ```
 
-Make sure to relocate the `net.hypixel.modapi.tweaker` package to a unique location such as `my.modid.modapitweaker`.
-
-Finally, add a manifest entry to your JAR pointing the `TweakClass` to `my.modid.modapitweaker.HypixelModAPITweaker`
-(or otherwise load the tweaker using delegation).
+Relocate the `cc.rewound.modapi.tweaker` package somewhere unique, such as `my.modid.modapitweaker`, and point the
+`TweakClass` manifest entry at it (or load the tweaker using delegation).
 
 ```kotlin
 tasks.shadowJar {
-	configurations = listOf(shadowImpl)
-    relocate("net.hypixel.modapi.tweaker", "my.modid.modapitweaker.HypixelModAPITweaker")
+    configurations = listOf(shadowImpl)
+    relocate("cc.rewound.modapi.tweaker", "my.modid.modapitweaker")
 }
 
 tasks.withType(org.gradle.jvm.tasks.Jar::class) {
-	manifest.attributes.run {
-		this["TweakClass"] = "my.modid.modapitweaker.HypixelModAPITweaker"
-	}
+    manifest.attributes.run {
+        this["TweakClass"] = "my.modid.modapitweaker.RewoundModAPITweaker"
+    }
 }
 ```
 
-Now your users will automatically use the bundled version of the mod api.
+The version must have four numeric parts, because the tweaker compares them to pick the newest copy.
 
+## Debugging
 
-## Contributing
+Start the game with `-Dcc.rewound.modapi.debug=true` to subscribe to every event and log what the server sends.
 
-If you wish to contribute to this implementation of the Mod API to offer improvements or fixes, you can do so by forking the repository and creating a pull request.
+[DevAuth](https://github.com/DJtheRedstoner/DevAuth) can log you in with your Minecraft account during development.
 
-> [!IMPORTANT]  
-> Run `gradlew setupDecompWorkspace` after importing the project to generate the files required to build it
+## License
 
-If IntelliJ still shows unknown symbol errors after running the command, you may need to [clear the filesystem cache](https://www.jetbrains.com/help/idea/invalidate-caches.html).
-
-### Testing Your Changes
-
-You can enable DevAuth to log in to the Hypixel server with your Minecraft account. Please see the [DevAuth docs](https://github.com/DJtheRedstoner/DevAuth) for more details.
+MIT, as upstream. See [LICENSE](LICENSE).
