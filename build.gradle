@@ -13,7 +13,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 allprojects {
     apply plugin: 'maven-publish'
-    version = "1.0.2.0" // First 3 numbers should correspond to the version of the API, last number is for the mod itself for any changes/fixes
+    version = "1.0.3.0" // First 3 numbers should correspond to the version of the API, last number is for the mod itself for any changes/fixes
     group = "cc.rewound" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
     archivesBaseName = "RewoundModAPI"
 
@@ -21,7 +21,9 @@ allprojects {
         maven {
             url "https://pkgs.dev.azure.com/djtheredstoner/DevAuth/_packaging/public/maven/v1"
         }
-        mavenLocal()
+        maven {
+            url "https://jitpack.io"
+        }
     }
 
     publishing {
@@ -56,7 +58,7 @@ configurations {
 }
 
 dependencies {
-    shade "cc.rewound:mod-api:dev-SNAPSHOT"
+    shade "com.github.HypixelNCP:modapi:1.0.3"
     runtimeOnly "me.djtheredstoner:DevAuth-forge-legacy:1.2.1"
 }
 

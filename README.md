@@ -6,12 +6,10 @@ the core library.
 
 ## Building
 
-The core library isn't published to a repository yet, so install it to your local Maven repository first, then build this
-mod with JDK 8.
+Build with JDK 8.
 
 ```sh
-cd ../RewoundModAPI && mvn install
-cd ../RewoundForgeModAPI && ./gradlew build
+./gradlew build
 ```
 
 The mod is `build/libs/RewoundModAPI-<version>.jar`, and the tweaker for bundling is
@@ -21,16 +19,16 @@ Run `./gradlew setupDecompWorkspace` after importing the project to generate the
 
 ## Usage
 
-Publish the mod to your local Maven repository with `./gradlew publishToMavenLocal`, then depend on it.
+The mod is available through [JitPack](https://jitpack.io/#HypixelNCP/ForgeModAPI).
 
 ```kotlin
 repositories {
-    mavenLocal()
+    maven("https://jitpack.io")
 }
 
-val version = "1.0.2.0"
+val version = "1.0.3"
 dependencies {
-    modImplementation("cc.rewound:mod-api-forge:$version")
+    modImplementation("com.github.HypixelNCP.ForgeModAPI:mod-api-forge:$version")
     // If you use ForgeGradle 2 you might need to use fg.deobf or deobfCompile instead. Consult your MDK for tips on how
     // to depend on an obfuscated dependency
 }
@@ -49,8 +47,8 @@ already has it.
 
 ```kotlin
 dependencies {
-    modImplementation("cc.rewound:mod-api-forge:$version") // You should already have this dependency from earlier
-    shadowImpl("cc.rewound:mod-api-forge-tweaker:$version") // You need to add this dependency
+    modImplementation("com.github.HypixelNCP.ForgeModAPI:mod-api-forge:$version") // You should already have this dependency from earlier
+    shadowImpl("com.github.HypixelNCP.ForgeModAPI:mod-api-forge-tweaker:$version") // You need to add this dependency
 }
 ```
 
