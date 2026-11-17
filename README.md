@@ -26,7 +26,7 @@ repositories {
     maven("https://jitpack.io")
 }
 
-val version = "1.0.3"
+val version = "1.0.4"
 dependencies {
     modImplementation("com.github.HypixelNCP.ForgeModAPI:mod-api-forge:$version")
     // If you use ForgeGradle 2 you might need to use fg.deobf or deobfCompile instead. Consult your MDK for tips on how
