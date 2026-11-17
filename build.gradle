@@ -13,7 +13,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 allprojects {
     apply plugin: 'maven-publish'
-    version = "1.0.3.0" // First 3 numbers should correspond to the version of the API, last number is for the mod itself for any changes/fixes
+    version = "1.0.4.0" // First 3 numbers should correspond to the version of the API, last number is for the mod itself for any changes/fixes
     group = "cc.rewound" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
     archivesBaseName = "RewoundModAPI"
 
@@ -58,7 +58,7 @@ configurations {
 }
 
 dependencies {
-    shade "com.github.HypixelNCP:modapi:1.0.3"
+    shade "com.github.HypixelNCP:modapi:1.0.4"
     runtimeOnly "me.djtheredstoner:DevAuth-forge-legacy:1.2.1"
 }
 
